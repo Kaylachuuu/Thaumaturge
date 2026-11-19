@@ -1,0 +1,48 @@
+//! block 256
+//
+// Lesson 4: lesson 1 again (c[i] = a[i] + b[i]), written by hand in PTX, the card's assembly language.
+//
+// PTX is a little like a RISC assembly with unlimited registers: you declare as many as you want, of a type,
+// and ptxas (BitScryer runs it each time you save) gives them real registers and turns it into SASS.
+
+.version 7.0                // which edition of PTX this is written in
+.target sm_70               // the oldest card it may run on (the V100); newer cards run it too
+.address_size 64            // pointers are 64 bits
+
+.visible .entry add(        // the kernel: its name, and its parameters
+    .param .u64 a,          // the three pointers...
+    .param .u64 b,
+    .param .u64 c,
+    .param .u32 n           // ...and the count
+)
+{
+    .reg .pred  %p<2>;      // predicates (true/false): %p0, %p1
+    .reg .b32   %r<8>;      // 32-bit registers: %r0 .. %r7
+    .reg .b64   %rd<12>;    // 64-bit registers: %rd0 .. %rd11
+    .reg .f32   %f<4>;      // float registers: %f0 .. %f3
+
+    ld.param.u64        %rd1, [a];
+    ld.param.u64        %rd2, [b];
+    ld.param.u64        %rd3, [c];
+    ld.param.u32        %r5, [n];
+    cvta.to.global.u64  %rd4, %rd1;
+    cvta.to.global.u64  %rd5, %rd2;
+    cvta.to.global.u64  %rd6, %rd3;
+    mov.u32             %r1, %ctaid.x;
+    mov.u32             %r2, %ntid.x;
+    mov.u32             %r3, %tid.x;
+    mad.lo.s32          %r4, %r1, %r2, %r3;
+    setp.ge.s32         %p1, %r4, %r5;
+    @%p1 bra            DONE;
+    mul.wide.s32        %rd7, %r4, 4;
+    add.s64             %rd8, %rd4, %rd7;
+    add.s64             %rd9, %rd5, %rd7;
+    add.s64             %rd10, %rd6, %rd7;
+    ld.global.f32       %f1, [%rd8];
+    ld.global.f32       %f2, [%rd9];
+    add.f32             %f3, %f1, %f2;
+    st.global.f32       [%rd10], %f3;
+
+DONE:
+    ret;
+}

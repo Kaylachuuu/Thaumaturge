@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "thaumaturge"
+version = "0.1.0"
+description = "Text-mode tools for programming GPUs and building models: BitScryer, an IDE for CUDA and PTX."
+readme = "README.md"
+license = {text = "Apache-2.0"}
+authors = [{name = "Kayla Roylance"}]
+requires-python = ">=3.10"
+dependencies = ["numpy"]
+classifiers = [
+  "License :: OSI Approved :: Apache Software License",
+  "Environment :: Console :: Curses",
+  "Operating System :: POSIX :: Linux",
+  "Topic :: Software Development :: Compilers",
+]
+
+[project.scripts]
+bitscryer = "thaumaturge.bitscryer.screen:console"
+
+[tool.setuptools.packages.find]
+include = ["thaumaturge*"]
+
+[tool.setuptools.package-data]
+"thaumaturge.bitscryer" = ["lessons/*/*", "answers/*", "template/*"]

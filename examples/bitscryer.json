@@ -1,0 +1,16 @@
+{
+  "cuda": "/usr/local/cuda-12.8",
+  "host_cxx": "/usr/bin/g++-14",
+  "cpus": "16-23",
+  "nice": 10,
+  "never": [
+    {"card": "GPU-00000000", "why": "the inference server's card"},
+    {"unit": "inference.service", "else_over_gib": 30, "why": "the inference server's card"}
+  ],
+  "busy": [
+    {"card": "GPU-11111111-2222-3333-4444-555555555555", "lock": "/run/training.lock",
+     "why": "lent to a training run right now"},
+    {"card": "GPU-11111111-2222-3333-4444-555555555555", "unit_active": "standby.service",
+     "why": "the standby server is on it"}
+  ]
+}
