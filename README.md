@@ -6,7 +6,7 @@ inside tmux so a dropped connection loses nothing.
 | Tool | What it is | State |
 |------|------------|-------|
 | **BitScryer** | An IDE for CUDA and hand-written PTX. Write a kernel in the left pane; the PTX and SASS it became show beside it, and each save builds it, runs it on the card, checks it against a CPU answer and times it against the card's top speed. Eight lessons lead from adding two lists to tensor cores. | Works |
-| **Artificer** | A model builder: snap blocks together into a model, edit each block's code, rearrange them. | Planned ([docs/artificer.md](docs/artificer.md)) |
+| **Artificer** | A model builder: snap blocks together into a model, edit each block's code, rearrange them, and check on the CPU that it fits together, with its size and the card memory it needs. Training comes next. | Building: you can shape and check models ([docs/artificer.md](docs/artificer.md)) |
 | **Sourcerer** | Version control. | Planned |
 | **BitWalker** | A debugger that steps through low-level code. | Planned |
 
@@ -55,6 +55,19 @@ python3 tests/test_bitscryer.py
 ```
 
 No card needed. With the CUDA toolkit installed it also builds every lesson.
+
+## Artificer
+
+```
+artificer                     the model you had open last (at first: tiny-story, a small story model)
+artificer ~/artificer/mine    a model of your own
+artificer new ~/artificer/x   start a model from tiny-story's blocks
+```
+
+The stack of blocks on the right, a block's code on the left. Enter opens a block, `a` adds one, `[` `]` move it,
+`g` puts it in a shortcut, `r` repeats it, `?` lists every key. Each change and each Ctrl-S checks the model on the
+CPU. It needs PyTorch (install.sh puts it in). More in [docs/artificer.md](docs/artificer.md);
+`python3 tests/test_artificer.py` tests it, no card needed.
 
 ## License
 

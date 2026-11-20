@@ -1,0 +1,16 @@
+# The small story model: about 124 million weights, the size of GPT-2's smallest.
+width = 768
+heads = 12
+vocab = 50304
+context = 512
+
+embed
+repeat 12
+    add
+        norm
+        attention
+    add
+        norm
+        feed-forward
+norm
+out

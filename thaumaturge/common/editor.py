@@ -31,15 +31,20 @@ extern static const inline void int unsigned signed long short char float double
 uint2 uint4 size_t if else for while do return break continue switch case default struct template typename
 using namespace constexpr auto sizeof true false nullptr define include pragma unroll""".split())
 BUILTINS = set("threadIdx blockIdx blockDim gridDim warpSize".split())
+PY_WORDS = set("""False None True and as assert break class continue def del elif else except finally for from global
+if import in is lambda not or pass raise return try while with yield self""".split())
+PY_TOKEN = re.compile(r"(#.*$)|(\"(?:[^\"\\\\]|\\\\.)*\"|'(?:[^'\\\\]|\\\\.)*')|(\b\d+\.?\d*(?:e-?\d+)?\b)|"
+                      r"([A-Za-z_]\w*)")
 TOKEN = re.compile(r"(//.*$)|(\"(?:[^\"\\\\]|\\\\.)*\")|(\b0[xX][0-9a-fA-F]+\b|\b\d+\.?\d*[fFuUlL]*\b)|"
                    r"(%[A-Za-z_][\w.]*|[#.]?[A-Za-z_]\w*)")
 
 
-def colour_spans(line: str, ptx: bool) -> list[tuple[int, int, str]]:
+def colour_spans(line: str, ptx: bool, python: bool = False) -> list[tuple[int, int, str]]:
     """(start, end, colour name) for the parts of a line worth colouring: comments, strings, numbers, keywords,
-    the built-in thread numbers, and in PTX its directives (.reg), registers (%r1) and opcodes."""
+    the built-in thread numbers, and in PTX its directives (.reg), registers (%r1) and opcodes. With python, a
+    Python file's (Artificer's blocks)."""
     out = []
-    for m in TOKEN.finditer(line):
+    for m in (PY_TOKEN if python else TOKEN).finditer(line):
         s, e = m.span()
         if m.group(1):
             out.append((s, e, "muted"))
@@ -50,7 +55,10 @@ def colour_spans(line: str, ptx: bool) -> list[tuple[int, int, str]]:
             out.append((s, e, "cyan"))
         else:
             word = m.group(4)
-            if ptx:
+            if python:
+                if word in PY_WORDS:
+                    out.append((s, e, "attn"))
+            elif ptx:
                 if word.startswith("%"):
                     out.append((s, e, "mem"))
                 elif word.startswith("."):
@@ -424,8 +432,8 @@ class Editor:
         elif self.col >= self.left + w - 1:
             self.left = self.col - w + 2
 
-    def draw(self, cv, y: int, x: int, h: int, w: int, col: dict, *, ptx: bool, mapped=(), errs=(),
-             focused: bool = True) -> tuple[int, int] | None:
+    def draw(self, cv, y: int, x: int, h: int, w: int, col: dict, *, ptx: bool = False, mapped=(), errs=(),
+             focused: bool = True, python: bool = False) -> tuple[int, int] | None:
         """The text in h rows by w columns (line numbers included); where the cursor goes on screen."""
         gutter = 6
         tw = max(1, w - gutter)
@@ -443,7 +451,7 @@ class Editor:
             line = self.lines[r]
             seg = line[self.left:self.left + tw]
             cv.put(y + i, x + gutter, seg.ljust(tw), col["text"], col["sel"] if r == self.row and focused else None)
-            for s, e, c in colour_spans(line, ptx):
+            for s, e, c in colour_spans(line, ptx, python):
                 s2, e2 = max(s, self.left), min(e, self.left + tw)
                 if s2 < e2:
                     cv.put(y + i, x + gutter + s2 - self.left, line[s2:e2], col[c],

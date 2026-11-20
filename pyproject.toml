@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "thaumaturge"
 version = "0.1.0"
-description = "Text-mode tools for programming GPUs and building models: BitScryer, an IDE for CUDA and PTX."
+description = "Text-mode tools for programming GPUs and building models: BitScryer, an IDE for CUDA and PTX, and Artificer, a model builder."
 readme = "README.md"
 license = {text = "Apache-2.0"}
 authors = [{name = "Kayla Roylance"}]
@@ -18,11 +18,16 @@ classifiers = [
   "Topic :: Software Development :: Compilers",
 ]
 
+[project.optional-dependencies]
+artificer = ["torch"]
+
 [project.scripts]
 bitscryer = "thaumaturge.bitscryer.screen:console"
+artificer = "thaumaturge.artificer.screen:console"
 
 [tool.setuptools.packages.find]
 include = ["thaumaturge*"]
 
 [tool.setuptools.package-data]
 "thaumaturge.bitscryer" = ["lessons/*/*", "answers/*", "template/*"]
+"thaumaturge.artificer" = ["blocks/*.py", "starter/*.stack"]
